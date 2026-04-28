@@ -30,7 +30,7 @@ C:\Qt\6.11.0\msvc2022_64\bin\windeployqt.exe QtSilKitBridge.exe
 
 👉 This automatically copies ALL required DLLs next to your executable
 
-then run  QtSilKitBridge.exe
+then run  QtSilKitBridge.exe --port 8501
 
 set SILKIT_BIN_PATH=C:/Program Files/Vector SIL Kit 5.0.4
 
@@ -41,8 +41,9 @@ start ./sil-kit-system-controller.exe --connect-uri silkit://localhost:8500 QtBr
 
 popd
 
+cmake --build . --config Release
 
- ┌───────────────┐
+        ┌───────────────┐
         │   Qt Thread    │
         │ QCanBusDevice  │
         └──────┬────────┘

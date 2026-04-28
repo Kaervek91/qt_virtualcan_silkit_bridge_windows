@@ -3,6 +3,8 @@ project(QtSilKitBridge)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets SerialBus)
 find_package(Threads REQUIRED)
@@ -20,9 +22,8 @@ add_executable(QtSilKitBridge
 )
 
 target_compile_options(QtSilKitBridge PRIVATE
-    /Zi        # debug symbols
-    /RTC1      # runtime checks
-    /MDd       # debug runtime
+    $<$<CONFIG:Debug>:/Zi /RTC1 /MDd>
+    $<$<CONFIG:Release>:/O2 /MD>
 )
 
 target_link_options(QtSilKitBridge PRIVATE
@@ -76,3 +77,41 @@ target_link_libraries(silkit_test PRIVATE
     SilKit
     Threads::Threads
 )
+
+
+if(WIN32)
+
+    # Path to windeployqt
+    find_program(WINDEPLOYQT_EXECUTABLE windeployqt
+        HINTS "C:/Qt/6.11.0/msvc2022_64/bin")
+
+    if(NOT WINDEPLOYQT_EXECUTABLE)
+        message(FATAL_ERROR "windeployqt not found")
+    endif()
+
+    # Path to SIL Kit DLLs
+    set(SILKIT_BIN_DIR "C:/Program Files/Vector SIL Kit 5.0.4/x86_64/bin")
+
+    # Deploy folder path
+    set(PACKAGE_DIR "${CMAKE_BINARY_DIR}/package/QtSilKitBridge_release")
+
+    # Copy exe release
+    add_custom_command(TARGET QtSilKitBridge POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${PACKAGE_DIR}"
+    
+        COMMAND ${CMAKE_COMMAND} -E copy
+            $<TARGET_FILE:QtSilKitBridge>
+            "${PACKAGE_DIR}"
+    
+        COMMAND ${WINDEPLOYQT_EXECUTABLE}
+            #--release
+            #--no-translations
+            #--compiler-runtime
+            "${PACKAGE_DIR}/QtSilKitBridge.exe"
+    
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${SILKIT_BIN_DIR}/SilKit.dll"
+            "${PACKAGE_DIR}"
+    )
+
+endif()
